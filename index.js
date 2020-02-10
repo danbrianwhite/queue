@@ -31,7 +31,7 @@ function runClient() {
     let ticket = 0;
     let run = false;
 
-    
+
     let data = fs.existsSync('data.json') && fs.readFileSync('data.json', 'ascii');
 
     if (data) {
@@ -48,6 +48,16 @@ function runClient() {
         }
     }
 
+    function getData(){
+        const data = {count, ticket, increment, run};
+        return data;
+    }
+
+    function saveData(){
+        const data = getData();
+        fs.writeFileSync('data.json', JSON.stringify(data), 'ascii');
+    }
+
     setInterval(function () {
         if (!run) {
             return;
@@ -57,8 +67,8 @@ function runClient() {
             return;
         }
         count += increment;
-        const data = {count, ticket, increment, run};
-        fs.writeFileSync('data.json', JSON.stringify(data), 'ascii');
+
+        saveData();
 
         console.log('ran ticket queue update');
         console.log(data);
@@ -79,31 +89,41 @@ function runClient() {
         return;
     });
 
+    /* set the ticket number to enable adhoc reset */
+    app.get('/ticketReset/:count', function (req, res) {
+        count = parseInt(req.params.count);
+        saveData();
+        res.json();
+    });
+
     /* set the increment number for speed to run queue */
     app.get('/increment/:increment', function (req, res) {
         increment = parseInt(req.params.increment);
+        saveData();
         res.json({increment});
     });
 
     /* starts the queue */
     app.get('/start', function (req, res) {
         run = true;
+        saveData();
         res.json({run});
     });
 
     /* stops the queue */
     app.get('/stop', function (req, res) {
         run = false;
+        saveData();
         res.json({run});
     });
 
-    /* stops the queue */
+    /* get data */
     app.get('/data', function (req, res) {
-        const data = {count, ticket, increment, run};
+        const data = getData();
         res.json(data);
     });
 
-    /* startup the app */
+    /* starting the app server */
     app.listen(port, function () {
         console.log(`Queue app worker listening on port ${port}!`);
     });
