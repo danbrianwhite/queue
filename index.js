@@ -31,7 +31,8 @@ function runClient() {
     let ticket = 0;
     let run = false;
 
-    let data = fs.readFileSync('data.json', 'ascii');
+    
+    let data = fs.existsSync('data.json') && fs.readFileSync('data.json', 'ascii');
 
     if (data) {
         try {
@@ -56,7 +57,11 @@ function runClient() {
             return;
         }
         count += increment;
-        fs.writeFileSync('data.json', JSON.stringify({count, ticket, increment, run}), 'ascii');
+        const data = {count, ticket, increment, run};
+        fs.writeFileSync('data.json', JSON.stringify(data), 'ascii');
+
+        console.log('ran ticket queue update');
+        console.log(data);
     }, 1000);
 
     /* get the current ticket run count */
@@ -90,6 +95,12 @@ function runClient() {
     app.get('/stop', function (req, res) {
         run = false;
         res.json({run});
+    });
+
+    /* stops the queue */
+    app.get('/data', function (req, res) {
+        const data = {count, ticket, increment, run};
+        res.json(data);
     });
 
     /* startup the app */
