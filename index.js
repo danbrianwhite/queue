@@ -59,9 +59,12 @@ function runClient() {
         fs.writeFileSync('data.json', JSON.stringify({count, ticket, increment, run}), 'ascii');
     }, 1000);
 
+    /* get the current ticket run count */
     app.get('/', function (req, res) {
         res.json({count})
     });
+
+    /* get a new ticket number */
     app.get('/ticket', function (req, res) {
         if (count > ticket) {
             ticket = count;
@@ -70,6 +73,8 @@ function runClient() {
         res.json({ticket});
         return;
     });
+
+    /* set the increment number for speed to run queue */
     app.get('/increment/:increment', function (req, res) {
         increment = parseInt(req.params.increment);
         res.json({increment});
